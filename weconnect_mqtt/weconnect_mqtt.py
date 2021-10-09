@@ -314,13 +314,17 @@ class WeConnectMQTTClient(paho.mqtt.client.Client):  # pylint: disable=too-many-
             elif isinstance(element.value, Image.Image):
                 convertedValue = util.imgToASCIIArt(element.value, columns=120, mode=ascii_magic.Modes.ASCII)
 
-                b64convertedValue = None
+                pngconvertedValue = None                
                 with io.BytesIO() as f:
                     element.value.save(f, 'PNG')
-                    b64convertedValue = base64.b64encode(f.getvalue())
+                    pngconvertedValue = f.getvalue()
 
-                LOG.debug('%s%s/b64, value changed: new value is: %s', self.prefix, element.getGlobalAddress(), b64convertedValue)
-                self.publish(topic=f'{self.prefix}{element.getGlobalAddress()}/b64', qos=1, retain=True, payload=b64convertedValue)
+                LOG.debug('%s%s/png, value changed: new value is binary (length: %s)', self.prefix, element.getGlobalAddress(), len(pngconvertedValue))
+                self.publish(topic=f'{self.prefix}{element.getGlobalAddress()}/png', qos=1, retain=True, payload=pngconvertedValue)
+
+                pngb64convertedValue = base64.b64encode(pngconvertedValue)
+                LOG.debug('%s%s/png/b64, value changed: new value is: %s', self.prefix, element.getGlobalAddress(), pngb64convertedValue)
+                self.publish(topic=f'{self.prefix}{element.getGlobalAddress()}/png/b64', qos=1, retain=True, payload=pngb64convertedValue)
             else:
                 convertedValue = str(element.value)
             LOG.debug('%s%s, value changed: new value is: %s', self.prefix, element.getGlobalAddress(), convertedValue)
