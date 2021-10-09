@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from enum import Enum
 import os
+import io
 import sys
 import argparse
 import base64
@@ -313,7 +314,11 @@ class WeConnectMQTTClient(paho.mqtt.client.Client):  # pylint: disable=too-many-
             elif isinstance(element.value, Image.Image):
                 convertedValue = util.imgToASCIIArt(element.value, columns=120, mode=ascii_magic.Modes.ASCII)
 
-                b64convertedValue = base64.b64encode(element.value.tobytes('PNG'))
+                b64convertedValue = None
+                with io.BytesIO() as f:
+                    element.value.save(f, 'PNG')
+                    b64convertedValue = base64.b64encode(f.getvalue())
+
                 LOG.debug('%s%s/b64, value changed: new value is: %s', self.prefix, element.getGlobalAddress(), b64convertedValue)
                 self.publish(topic=f'{self.prefix}{element.getGlobalAddress()}/b64', qos=1, retain=True, payload=b64convertedValue)
             else:
