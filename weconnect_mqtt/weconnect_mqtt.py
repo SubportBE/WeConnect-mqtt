@@ -313,7 +313,7 @@ class WeConnectMQTTClient(paho.mqtt.client.Client):  # pylint: disable=too-many-
             elif isinstance(element.value, Image.Image):
                 convertedValue = util.imgToASCIIArt(element.value, columns=120, mode=ascii_magic.Modes.ASCII)
 
-                b64convertedValue = base64.b64encode(element.value)
+                b64convertedValue = base64.b64encode(element.value.tobytes())
                 LOG.debug('%s%s/b64, value changed: new value is: %s', self.prefix, element.getGlobalAddress(), b64convertedValue)
                 self.publish(topic=f'{self.prefix}{element.getGlobalAddress()}/b64', qos=1, retain=True, payload=b64convertedValue)
             else:
